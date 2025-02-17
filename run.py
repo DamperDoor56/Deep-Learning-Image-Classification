@@ -107,4 +107,66 @@ model.to(device)
 next(model.parameters()).device
 
 model = torch.compile(model)
-print(model)
+#print(model)
+
+# Training Model
+loss_function = nn.CrossEntropyLoss()
+optimizer = Adam(model.parameters())
+
+train_N = len(train_loader.dataset)
+valid_N = len(valid_loader.dataset)
+
+# Calculate the accuracy for each batch
+def get_batch_accuracy(output, y, N):
+    pred = output.argmax(dim=1, keepdim=True)
+    correct = pred.eq(y.view_as(pred)).sum().item()
+    return correct / N
+
+# Train Function to train our model based on the training data
+def train():
+    loss = 0
+    accuracy = 0
+
+    model.train()
+    for x, y in train_loader:
+        x, y = x.to(device), y.to(device)
+        output = model(x)
+        optimizer.zero_grad()
+        batch_loss = loss_function(output, y)
+        batch_loss.backward()
+        optimizer.step()
+
+        loss += batch_loss.item()
+        accuracy += get_batch_accuracy(output, y, train_N)
+    print('Train - Loss: {:.4f} Accuracy: {:.4f}'.format(loss, accuracy))
+
+# Validation Function
+def validate():
+    loss = 0
+    accuracy = 0
+
+    model.eval()
+    with torch.no_grad():
+        for x, y in valid_loader:
+            x, y = x.to(device), y.to(device)
+            output = model(x)
+
+            loss += loss_function(output, y).item()
+            accuracy += get_batch_accuracy(output, y, valid_N)
+    print('Valid - Loss: {:.4f} Accuracy: {:.4f}'.format(loss, accuracy))
+
+# Loop
+epochs = 5
+
+for epoch in range(epochs):
+    print('Epoch: {}'.format(epoch))
+    train()
+    validate()
+
+prediction = model(x_0_tensor)
+prediction
+
+prediction.argmax(dim=1, keepdim=True)
+print(prediction.argmax(dim=1, keepdim=True))
+y_0
+print(y_0)
